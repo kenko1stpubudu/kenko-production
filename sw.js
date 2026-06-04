@@ -1,6 +1,6 @@
 const CACHE = 'kenko-v1';
 const ASSETS = [
-  '/index.html',
+  '/kenko-production/index.html',
   '/manifest.json'
 ];
 

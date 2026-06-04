@@ -2,7 +2,7 @@
   "name": "Kenko Production Flow",
   "short_name": "Kenko Prod",
   "description": "Kenko production order tracking app",
-  "start_url": "/index.html",
+  "start_url": "/kenko-production/index.html",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#111111",
@@ -21,5 +21,5 @@
       "purpose": "any maskable"
     }
   ],
-  "scope": "/"
+  "scope": "/kenko-production/"
 }
