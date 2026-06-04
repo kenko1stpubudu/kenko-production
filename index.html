@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kenko Prod">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.json">
+<!-- Apple touch icons -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kenko Production</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#111;--bg2:#1a1a1a;--bg3:#242424;--border:#2e2e2e;
+  --text:#f0f0f0;--text2:#aaa;--text3:#555;
+  --purple:#8b83f5;--purple2:#534AB7;--purple-bg:#1e1a3a;
+  --green:#4caf7d;--green-bg:#1a2e1f;
+  --red:#e05c5c;--red-bg:#2e1a1a;
+  --amber:#d4920a;--amber-bg:#2e2410;
+  --blue:#3b9ddd;--blue-bg:#0f2030;
+  --radius:10px;--radius-sm:7px;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:40px;}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:24px;}
+.login-logo{font-size:48px;}
+.login-title{font-size:22px;font-weight:700;}
+.login-sub{font-size:13px;color:var(--text2);text-align:center;}
+.login-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:14px;}
+.login-label{font-size:12px;color:var(--text2);margin-bottom:4px;}
+.login-select{width:100%;padding:12px 14px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+.login-btn{padding:14px;background:var(--purple2);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.login-btn:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
+
+/* CONNECTING */
+#connecting{position:fixed;inset:0;background:var(--bg);z-index:190;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOPBAR */
+#topbar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+#topbar .icon{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.ttitle{font-size:14px;font-weight:600;flex:1;}
+.sync-badge{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--green-bg);color:var(--green);display:flex;align-items:center;gap:4px;}
+.sync-badge.err{background:var(--red-bg);color:var(--red);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+#user-pill{display:flex;align-items:center;gap:6px;background:var(--purple-bg);border:0.5px solid var(--purple2);border-radius:20px;padding:4px 10px 4px 6px;cursor:pointer;}
+.user-av{width:22px;height:22px;border-radius:50%;background:var(--purple2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:11px;color:var(--purple);font-weight:500;}
+
+/* NOTIF */
+#notif-btn{position:relative;width:34px;height:34px;border-radius:50%;background:var(--bg3);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+#notif-badge{position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:9px;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;}
+#notif-panel{position:fixed;top:60px;right:14px;width:calc(100% - 28px);max-width:320px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);z-index:150;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;max-height:50vh;overflow-y:auto;}
+#notif-panel.open{display:block;}
+.notif-hd{padding:10px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.notif-hd-title{font-size:13px;font-weight:600;}
+.notif-clear{font-size:11px;color:var(--text3);cursor:pointer;padding:2px 6px;}
+.notif-item{padding:10px 14px;border-bottom:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:var(--blue-bg);}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:4px;}
+.notif-dot.read{background:transparent;border:1px solid var(--text3);}
+.notif-text{font-size:12px;line-height:1.4;flex:1;}
+.notif-time{font-size:10px;color:var(--text3);}
+.notif-empty{padding:20px;text-align:center;font-size:12px;color:var(--text3);}
+
+/* ORDER TABS */
+#otabs{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+#otabs::-webkit-scrollbar{display:none;}
+.otab{white-space:nowrap;font-size:12px;padding:6px 14px;border-radius:20px;border:0.5px solid var(--border);background:var(--bg2);cursor:pointer;color:var(--text2);font-family:inherit;flex-shrink:0;}
+.otab.active{background:var(--purple2);color:#fff;border-color:var(--purple2);}
+
+/* STAGE TABS */
+#stage-bar{display:flex;margin:0 14px 10px;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.stab{flex:1;padding:9px 2px;text-align:center;font-size:11px;font-weight:600;background:var(--bg2);color:var(--text3);border:none;font-family:inherit;cursor:pointer;border-right:0.5px solid var(--border);line-height:1.4;}
+.stab:last-child{border-right:none;}
+.stab.active{background:var(--purple2);color:#fff;}
+.stab.completed{background:var(--green-bg);color:var(--green);}
+
+/* CARD */
+#content{padding:0 14px;}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+.card-hd{padding:10px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:600;}
+.pct-badge{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:600;}
+.pct-badge.done{background:var(--green-bg);color:var(--green);}
+.pct-badge.prog{background:var(--amber-bg);color:var(--amber);}
+.pct-badge.zero{background:var(--bg3);color:var(--text3);}
+.pbar{height:3px;background:var(--border);}
+.pfill{height:100%;transition:width .4s;}
+.pfill.green{background:var(--green);}
+.pfill.amber{background:var(--amber);}
+
+/* ROWS */
+.it-row{display:flex;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--border);gap:8px;min-height:48px;}
+.it-row:last-child{border-bottom:none;}
+.it-main{display:flex;flex-direction:column;flex:1;gap:2px;}
+.it-name{font-size:13px;font-weight:500;line-height:1.3;}
+.it-name.warn{color:var(--red);}
+.it-ts{font-size:10px;color:var(--text3);}
+.it-kg{font-size:11px;padding:2px 7px;border-radius:6px;flex-shrink:0;}
+.it-kg.ok{background:var(--purple-bg);color:var(--purple);}
+.it-kg.miss{background:var(--red-bg);color:var(--red);}
+.ck-pair{display:flex;gap:6px;flex-shrink:0;}
+.cki{display:flex;align-items:center;gap:4px;cursor:pointer;padding:5px 6px;border-radius:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.cki:active{background:var(--bg3);}
+.ckb{width:22px;height:22px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .15s;}
+.ckb.on{background:var(--green);border-color:var(--green);color:#fff;}
+.cklbl{font-size:11px;color:var(--text3);}
+
+.btn-area{padding:10px 14px;}
+.proceed-btn{padding:13px;border:none;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;width:100%;}
+.proceed-btn.full{background:var(--purple2);color:#fff;}
+.proceed-btn.partial{background:transparent;color:var(--amber);border:1px solid var(--amber);}
+
+.fw-row{display:flex;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--border);gap:8px;min-height:48px;transition:opacity .3s,max-height .4s,padding .4s;overflow:hidden;max-height:80px;}
+.fw-row:last-child{border-bottom:none;}
+.fw-row.removing{opacity:0;max-height:0;padding:0 14px;}
+.fw-main{display:flex;flex-direction:column;flex:1;gap:2px;}
+.fw-name{font-size:13px;font-weight:500;line-height:1.3;}
+.fw-name.ok{color:var(--text);}
+.fw-name.nok{color:var(--red);}
+.fw-ts{font-size:10px;color:var(--text3);}
+.fw-kg{font-size:11px;padding:2px 7px;border-radius:6px;flex-shrink:0;}
+.fw-kg.ok{background:var(--purple-bg);color:var(--purple);}
+.fw-kg.nok{background:var(--red-bg);color:var(--red);}
+.fw-pair{display:flex;gap:6px;flex-shrink:0;}
+.fw-cki{display:flex;align-items:center;gap:4px;cursor:pointer;padding:5px 6px;border-radius:6px;-webkit-tap-highlight-color:transparent;}
+.fw-cki:active{background:var(--bg3);}
+.fw-box{width:22px;height:22px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .15s;}
+.fw-box.on{background:var(--green);border-color:var(--green);color:#fff;}
+.fw-lbl{font-size:11px;color:var(--text3);}
+.warn-tag{font-size:10px;padding:2px 7px;background:var(--red-bg);color:var(--red);border-radius:5px;flex-shrink:0;}
+/* Japan Order */
+.japan-badge{font-size:10px;padding:2px 8px;border-radius:5px;background:#2a1800;color:#e09020;border:1px solid #c87000;flex-shrink:0;font-weight:600;}
+.jp-qty-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--border);min-height:60px;flex-wrap:wrap;}
+.jp-main{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px;}
+.jp-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.jp-track-row{display:flex;align-items:center;gap:6px;font-size:11px;}
+.jp-track-lbl{color:var(--text3);width:26px;flex-shrink:0;}
+.jp-track-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.jp-track-fill{height:100%;background:#c87000;border-radius:3px;transition:width .4s;}
+.jp-track-fill.bag{background:#d4920a;}
+.jp-track-val{color:#e09020;font-weight:600;min-width:60px;text-align:right;flex-shrink:0;}
+.jp-track-val.done{color:var(--green);}
+.jp-bal{color:var(--text3);font-size:10px;min-width:55px;flex-shrink:0;}
+.jp-bal.zero{color:var(--green);font-weight:600;}
+.jp-input-area{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.jp-grp{display:flex;align-items:center;gap:5px;}
+.jp-grp-lbl{font-size:11px;color:var(--text3);width:26px;flex-shrink:0;}
+.jp-input{width:80px;padding:7px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;text-align:center;outline:none;}
+.jp-input:focus{border-color:#c87000;}
+.jp-ok{padding:7px 12px;background:#c87000;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.jp-ok:hover:not(:disabled){background:#a06000;}
+.jp-ok:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
+
+.box-row{display:flex;align-items:center;padding:10px 14px;border-bottom:0.5px solid var(--border);gap:8px;min-height:48px;transition:opacity .3s,max-height .4s,padding .4s;overflow:hidden;max-height:80px;}
+.box-row:last-child{border-bottom:none;}
+.box-row.removing{opacity:0;max-height:0;padding:0 14px;}
+.box-main{display:flex;flex-direction:column;flex:1;gap:2px;}
+.box-name{font-size:13px;font-weight:500;line-height:1.3;}
+.box-name.ok{color:var(--text);}
+.box-name.nok{color:var(--red);}
+.box-ts{font-size:10px;color:var(--text3);}
+.box-kg{font-size:11px;padding:2px 7px;border-radius:6px;flex-shrink:0;}
+.box-kg.ok{background:var(--purple-bg);color:var(--purple);}
+.box-kg.nok{background:var(--red-bg);color:var(--red);}
+.box-ck{display:flex;align-items:center;gap:4px;cursor:pointer;padding:5px 6px;border-radius:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.box-ck:active{background:var(--bg3);}
+.box-b{width:22px;height:22px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .15s;}
+.box-b.on{background:var(--green);border-color:var(--green);color:#fff;}
+.box-lbl{font-size:11px;color:var(--text3);}
+.ok-btn{padding:7px 14px;font-size:12px;font-weight:600;border:none;border-radius:8px;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.ok-btn.ready{background:var(--green);color:#fff;}
+.ok-btn.issue-ok{background:transparent;color:var(--amber);border:1px solid var(--amber);}
+.ok-btn.dis{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
+.pending-sep{padding:8px 14px;font-size:11px;color:var(--text3);background:var(--bg3);border-top:0.5px solid var(--border);}
+.all-done{padding:16px;text-align:center;font-size:13px;color:var(--green);}
+.dispatch-btn{padding:14px;background:var(--purple2);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;font-family:inherit;font-weight:600;width:100%;}
+.empty-note{padding:16px;text-align:center;font-size:12px;color:var(--text2);}
+
+/* Japan order */
+.japan-tag{font-size:10px;padding:1px 6px;border-radius:5px;background:#3a2800;color:#ffd700;border:1px solid #7a5c00;flex-shrink:0;}
+.japan-qty-row{display:flex;align-items:center;gap:6px;padding:4px 14px 8px;flex-wrap:wrap;}
+.japan-input-group{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px 8px;}
+.japan-input-label{font-size:10px;color:var(--text3);}
+.japan-qty-input{width:58px;background:transparent;border:none;color:#ffd700;font-size:13px;font-weight:600;text-align:center;outline:none;font-family:inherit;}
+.japan-ok-btn{padding:5px 12px;background:#7a5c00;color:#ffd700;border:1px solid #d4a017;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.japan-ok-btn:active{background:#5a4200;}
+.japan-progress{font-size:11px;color:var(--text3);}
+.japan-progress span{color:#ffd700;font-weight:600;}
+
+/* add order btn */
+#add-order-btn{padding:5px 11px;background:var(--purple2);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;}
+#add-order-btn:active{opacity:.8;}
+/* add order modal */
+#ao-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:flex-end;justify-content:center;padding-bottom:0;}
+#ao-overlay.open{display:flex;}
+#ao-box{background:var(--bg2);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:0 0 32px;}
+.ao-hd{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:1;}
+.ao-title{font-size:14px;font-weight:600;}
+.ao-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;line-height:1;padding:0 4px;}
+.ao-body{padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+.ao-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
+.ao-input{width:100%;padding:11px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:inherit;outline:none;}
+.ao-input:focus{border-color:var(--purple2);}
+.ao-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.ao-chip{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;}
+.ao-chip.active{background:var(--purple2);border-color:var(--purple2);color:#fff;}
+.ao-chip.custom-chip{border-color:#4caf7d;color:#4caf7d;}
+.ao-chip.custom-chip.active{background:#4caf7d;border-color:#4caf7d;color:#fff;}
+.ao-chip.japan{border-color:#c87000 !important;color:#c87000 !important;}
+.ao-chip.japan.active{background:#c87000 !important;border-color:#c87000 !important;color:#fff !important;}
+.ao-suggest{display:flex;flex-wrap:wrap;gap:5px;max-height:150px;overflow-y:auto;}
+.ao-suggest-chip{padding:5px 11px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;}
+.ao-suggest-chip:active{background:var(--purple-bg);border-color:var(--purple2);color:var(--purple);}
+.ao-suggest-chip.added{background:var(--green-bg);border-color:var(--green);color:var(--green);opacity:.6;pointer-events:none;}
+.ao-add-row{display:flex;gap:8px;align-items:flex-end;}
+.ao-add-row .ao-input{flex:1;margin:0;}
+.ao-qty{width:80px;flex-shrink:0;}
+.ao-plus{width:44px;height:44px;background:var(--purple2);color:#fff;border:none;border-radius:var(--radius-sm);font-size:20px;cursor:pointer;flex-shrink:0;}
+.ao-plus:active{opacity:.8;}
+.ao-item-list{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;}
+.ao-item-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:6px;font-size:13px;}
+.ao-item-name{flex:1;font-weight:500;}
+.ao-item-qty{color:var(--purple);font-size:12px;min-width:30px;text-align:right;}
+.ao-item-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0 2px;}
+.ao-item-del:active{color:var(--red);}
+.ao-count{font-size:11px;color:var(--text3);}
+.ao-confirm{width:100%;padding:14px;background:var(--purple2);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.ao-confirm:disabled{background:var(--bg3);color:var(--text3);}
+.ao-confirm:active:not(:disabled){opacity:.85;}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-size:13px;color:var(--text);z-index:300;transition:transform .3s;white-space:nowrap;max-width:90vw;text-align:center;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-logo">📦</div>
+  <div class="login-title">Kenko Production</div>
+  <div class="login-sub">Select your name to continue</div>
+  <div class="login-card">
+    <div>
+      <div class="login-label">Who are you?</div>
+      <select class="login-select" id="user-select" onchange="document.getElementById('login-go').disabled=!this.value">
+        <option value="">— Select name —</option>
+        <option>Lahiru</option>
+        <option>Chaminda</option>
+        <option>Nuwan</option>
+        <option>Menika</option>
+        <option>Warshika</option>
+        <option>Nipun</option>
+        <option>Pubudu</option>
+      </select>
+    </div>
+    <button class="login-btn" id="login-go" disabled onclick="doLogin()">Start →</button>
+  </div>
+</div>
+
+<div id="connecting" style="display:none;flex-direction:column;align-items:center;justify-content:center;position:fixed;inset:0;background:var(--bg);z-index:190;">
+  <div class="spin"></div>
+  <div style="font-size:13px;color:var(--text2);margin-top:12px;">Connecting to Firebase...</div>
+</div>
+
+<div id="main-app" style="display:none;">
+  <div id="topbar">
+    <div class="icon">📦</div>
+    <div class="ttitle">Kenko Production</div>
+    <div class="sync-badge" id="sync-badge"><div class="sync-dot"></div><span>Live</span></div>
+    <button id="add-order-btn" onclick="openAddOrder()">＋ Order</button>
+    <div id="notif-btn" onclick="toggleNotif()">
+      🔔<div id="notif-badge" style="display:none;"></div>
+    </div>
+    <div id="user-pill" onclick="doLogout()">
+      <div class="user-av" id="user-av">L</div>
+      <span class="user-name" id="user-name-lbl">Lahiru</span>
+    </div>
+  </div>
+
+  <div id="notif-panel">
+    <div class="notif-hd">
+      <span class="notif-hd-title">🔔 Notifications</span>
+      <span class="notif-clear" onclick="clearNotifs()">Clear all</span>
+    </div>
+    <div id="notif-list"></div>
+  </div>
+
+  <div id="otabs"></div>
+  <div id="stage-bar">
+    <button class="stab active" id="stab1" onclick="setStage(1)">① Raw &amp; Bag</button>
+    <button class="stab" id="stab2" onclick="setStage(2)">② Pack Open</button>
+    <button class="stab" id="stab3" onclick="setStage(3)">③ Fill &amp; Seal</button>
+    <button class="stab" id="stab4" onclick="setStage(4)">④ Box &amp; OK</button>
+  </div>
+  <div id="content"></div>
+</div>
+
+<!-- ADD ORDER MODAL -->
+<div id="ao-overlay">
+  <div id="ao-box">
+    <div class="ao-hd">
+      <span class="ao-title">＋ Add New Order</span>
+      <button class="ao-close" onclick="closeAddOrder()">&#10005;</button>
+    </div>
+    <div class="ao-body">
+      <div>
+        <div class="ao-label">Customer</div>
+        <div class="ao-chips" id="ao-chips"></div>
+      </div>
+      <div>
+        <div class="ao-label">Customer Items — Tap to Add</div>
+        <div class="ao-suggest" id="ao-suggest"></div>
+      </div>
+      <div>
+        <div class="ao-label">Add Item</div>
+        <div class="ao-add-row">
+          <input class="ao-input" id="ao-name" placeholder="Item name..." />
+          <input class="ao-input ao-qty" id="ao-qty" type="number" min="1" value="1" placeholder="Qty" />
+          <button class="ao-plus" onclick="aoAddItem()">+</button>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div class="ao-label" style="margin:0;">Items</div>
+          <div class="ao-count" id="ao-count">0 items</div>
+        </div>
+        <div class="ao-item-list" id="ao-item-list"></div>
+      </div>
+      <button class="ao-confirm" id="ao-confirm" onclick="aoConfirm()" disabled>✔ Add to Production</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+/* ── FIREBASE CONFIG ── */
+const firebaseConfig = {
+  databaseURL: "https://kenko-production-73d34-default-rtdb.firebaseio.com"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+/* ── RAW ORDERS ── */
+const RAW_ORDERS = {};  // loaded from Firebase
+
+/* ── HELPERS ── */
+function parseGrams(n){const m=n.match(/(\d+(?:\.\d+)?)\s*(g|kg)\b/i);if(!m)return 0;return parseFloat(m[1])*(m[2].toLowerCase()==='kg'?1000:1);}
+function fmtKg(g){return g>=1000?(g/1000).toFixed(2)+'kg':g+'g';}
+function calcKg(it){const g=parseGrams(it.name);return g?fmtKg(g*it.qty*it.cs):null;}
+function now(){const d=new Date();return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+function initials(name){return name.slice(0,2).toUpperCase();}
+
+/* ── APP STATE ── */
+let state = {};
+let curOrder = null;
+let curStage = 1;
+let curUser  = '';
+const notifications = [];
+let unreadCount = 0;
+let saving = false;
+
+function buildFresh() {
+  // No hardcoded orders — loaded from Firebase
+}
+const CUSTOMER_ITEMS = {
+  "Kandy": ["Almond Pack 100G", "Apricot 85G", "Basil Seed 100G", "Black Raisins 100G", "Blueberry 85G", "Brain Booster 100G", "Ceylon Cashew Burnt 75G", "Ceylon Cashew Devilled 75G", "Ceylon Cashew Roasted 75G", "Chia Seeds Pack 100G", "Chocolate With Three Nuts 100G", "Cranberries 100G", "Dried Plums 100G", "Flax Seed Pack 100G", "Forest Bee Honey 460G", "Hazal Nut 85G", "Khalas Dates 200G", "Natural High Protein Mix 100G", "Nut & Fruits Mix 100G", "Organic Roasted Peanuts 200G", "Pistachio 85G", "Pumpkin Seeds Pack 100G", "Roasted Seed And Nuts Snack 100G", "Sunflower Seed Pack 100G", "Walnut 85G"],
+  "Helth G": ["Brain Booster 100G", "Chia Seeds Pack 100G", "Cranberries 100G", "Pumpkin Seeds Pack 100G", "Nut & Fruits Mix 100G", "Psyllium Husk 100G", "Almond Pack 100G", "Pistachio 85G"],
+  "Cfc": ["Brain Booster 100G", "Pumpkin Seeds Pack 100G", "Natural High Protein Mix 100G", "Nut & Fruits Mix 100G", "Walnut 85G", "Almond Pack 100G", "Chia Seeds Pack 100G", "Flax Seed Pack 100G", "Green Sweet Stevia Powder 100G", "Chocolate With Three Nuts 100G", "Cranberries 100G"],
+  "Spar": ["Natural High Protein Mix 100G", "Brain Booster 100G", "Nut & Fruits Mix 100G", "Roasted Seed And Nuts Snack 100G", "Flax Seed Pack 100G", "Pumpkin Seeds Pack 100G", "Dried Golden Raisins 100G", "Dried Plums 100G", "Nut & Fruits Mix 50G", "Premium Three Nuts 75G", "Ceylon Cashew Roasted 75G", "Blueberry 85G", "Walnut 85G", "Pistachio 85G", "Ceylon Cashew Burnt 75G", "Almond Pack 100G", "Almond 45G", "Chocolate With Three Nuts 100G", "Basil Seed 100G", "Organic Roasted Peanuts 200G", "Cranberries 100G", "Chia Seeds Pack 100G", "Cranberries 45G", "Ceylon Cashew Devilled 75G", "Apricot 85G"],
+  "Up Town": ["Brain Booster 100G", "Chocolate With Three Nuts 100G", "Natural High Protein Mix 100G", "Nut & Fruits Mix 100G", "Ceylon Cashew Burnt 75G", "Ceylon Cashew Devilled 75G", "Ceylon Cashew Roasted 75G", "Roasted Seed And Nuts Snack 100G", "_Ceylon Coffee Powder Dark Roast 100G", "Khalas Dates 200G", "_Bee Honey 200G", "Dried Plums 100G", "Forest Bee Honey 460G", "Organic Roasted Peanuts 200G"],
+  "Nw": ["Almond Pack 100G", "Natural High Protein Mix 100G", "Brain Booster 100G", "Nut & Fruits Mix 100G", "Chocolate With Three Nuts 100G", "Roasted Seed And Nuts Snack 100G", "Dried Plums 100G", "Walnut 85G", "Cranberries 100G", "Pumpkin Seeds Pack 100G", "Roasted Cashew Nut 100G", "Devilled Cashew Nut 100G", "Cashew Nuts Sugar Coated 100G", "Blueberry 85G", "Flax Seed Pack 100G", "Black Raisins 100G", "Pistachio 85G", "Chia Seeds Pack 100G", "Kurakkan Flour 300G", "Kithul Flour 200G", "White Sesami 200G", "Black Sesame Seed 100G", "Rice Flakes 150G", "Burnt Cashew Nuts 100G", "Cashew Nuts Garlic 100G", "Cashew Nuts Chilli Garlic 100G", "Apricot 85G", "Premium Three Nuts 75G", "Sunflower Seed Pack 100G", "Basil Seed 100G"],
+  "Shade": ["Pistachio 85G", "Walnut 85G", "Pumpkin Seeds Pack 100G", "Almond Pack 100G", "Chia Seeds Pack 100G", "Nut & Fruits Mix 100G", "Brain Booster 100G"],
+  "Mawella": ["Brain Booster 100G", "Natural High Protein Mix 100G", "Chocolate With Three Nuts 100G", "Nut & Fruits Mix 100G", "Walnut 85G", "Almond Pack 100G", "Pistachio 85G", "Cranberries 100G", "Apricot 85G", "Black Raisins 100G", "Chia Seeds Pack 100G", "Flax Seed Pack 100G", "Roasted Seed And Nuts Snack 100G", "Pumpkin Seeds Pack 100G", "Sunflower Seed Pack 100G", "Blueberry 85G", "Basil Seed 100G"],
+  "Jeewaka": ["Natural High Protein Mix 100G", "Almond Pack 100G", "Chia Seeds Pack 100G", "Ceylon Cashew Burnt 75G", "Cranberries 100G", "Pumpkin Seeds Pack 100G", "Chocolate With Three Nuts 100G", "Nut & Fruits Mix 100G", "Apricot 85G", "Blueberry 85G", "Walnut 85G"],
+  "Diligez": ["Natural High Protein Mix 100G", "Nut & Fruits Mix 100G", "Pistachio 85G", "Roasted Seed And Nuts Snack 100G", "Walnut 85G", "Pumpkin Seeds Pack 100G", "Sunflower Seed Pack 100G", "Basil Seed 100G", "Almond Pack 100G", "Almond 45G", "Blueberry 85G", "Brain Booster 100G", "Chia Seeds Pack 100G", "Cranberries 100G", "Cranberries 45G", "Flax Seed Pack 100G", "Nut & Fruits Mix 50G", "Dried Plums 100G", "Premium Three Nuts 75G", "_Ceylon Coffee Bean Dark Roast 100G", "_Ceylon Coffee Bean Medium Roast 100G", "_Ceylon Coffee Bean Dark Roast 100G", "Chocolate With Three Nuts 100G"],
+  "Japan Order": ["Amla Pw 100G", "Cinnamon Pw 50G", "Cinnamon Pw100G", "Cinnamon Stick 80G", "Clove Whole 100G", "Cumin 100G", "Dry Banana 100G", "Dry Mango 100G", "Ginger Pw100G", "Moringa Pw 100G", "Turmeric Pw100G", "Clove Pw 100G", "Dry Pineapple 100G", "Chi Garl Cashew", "Salt & Pep Cashew", "Dev Cashew", "Burnt Cashew", "Cashewnut"],
+  "WTC": ["Mixed Fruit Nut 1Kg"],
+  "Park Street": ["Pumpkin Seeds 100G", "Protein Mix 100G", "Brain Booster 100G", "Chia Seeds 100G", "Prunes 75G", "Almonds 100G", "Cranberry 100G", "Apricot 85G", "Sago 200G", "Komas Dates 500G", "Quinoa 200G", "Barley 200G"],
+};
+const JAPAN_CUSTOMER = "Japan Order";
+
+/* ── FIREBASE SYNC ── */
+function saveState() {
+  if (saving) return;
+  saving = true;
+  set(ref(db, 'kenko/state'), JSON.stringify(state))
+    .then(() => {
+      setSyncBadge(true);
+      saving = false;
+    })
+    .catch(e => {
+      setSyncBadge(false);
+      saving = false;
+    });
+}
+
+function setSyncBadge(ok) {
+  const b = document.getElementById('sync-badge');
+  b.className = 'sync-badge' + (ok ? '' : ' err');
+  b.innerHTML = ok
+    ? '<div class="sync-dot"></div><span>Live</span>'
+    : '⚠ Offline';
+}
+
+function loadFromSaved(saved) {
+  Object.keys(state).forEach(k => delete state[k]);
+  Object.keys(saved).forEach(function(k) {
+    if (Array.isArray(saved[k])) {
+      state[k] = saved[k].map(function(s) {
+        return { name:s.name||'', qty:s.qty||0, cs:s.cs||1,
+          isJapan:!!s.isJapan,
+          rawDone:s.rawDone||0, bagDone:s.bagDone||0, packopenDone:s.packopenDone||0,
+          fillDone:s.fillDone||0, weighDone:s.weighDone||0, boxDone:s.boxDone||0,
+          raw:!!s.raw, bag:!!s.bag, packopen:!!s.packopen, fill:!!s.fill, weigh:!!s.weigh, box:!!s.box,
+          s2done:!!s.s2done, s3done:!!s.s3done, ts:s.ts||{} };
+      });
+    }
+  });
+}
+
+function startListening() {
+  onValue(ref(db, 'kenko/state'), snap => {
+    const val = snap.val();
+    if (!val) { render(); return; }
+    try {
+      loadFromSaved(JSON.parse(val));
+      setSyncBadge(true);
+    } catch(e) { console.error(e); }
+    // fix curOrder if needed
+    const keys = Object.keys(state);
+    if (!curOrder || !state[curOrder]) curOrder = keys[0] || null;
+    render();
+  }, err => setSyncBadge(false));
+}
+
+/* ── LOGIN ── */
+function doLogin() {
+  curUser = document.getElementById('user-select').value;
+  if (!curUser) return;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('connecting').style.display = 'flex';
+  // init & listen
+  buildFresh();
+  startListening();
+  setTimeout(() => {
+    document.getElementById('connecting').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    document.getElementById('user-av').textContent = initials(curUser);
+    document.getElementById('user-name-lbl').textContent = curUser;
+    showToast('Welcome, ' + curUser + ' 👋');
+  }, 1200);
+}
+window.doLogin = doLogin;
+
+function doLogout() {
+  if (!confirm('Switch user?')) return;
+  curUser = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('user-select').value = '';
+  document.getElementById('login-go').disabled = true;
+}
+window.doLogout = doLogout;
+
+/* ── NOTIFICATIONS ── */
+function addNotif(msg) {
+  notifications.unshift({msg, time:now(), read:false});
+  unreadCount++;
+  updateBadge();
+  showToast(msg);
+}
+function updateBadge() {
+  const b = document.getElementById('notif-badge');
+  if (unreadCount > 0) { b.style.display='flex'; b.textContent = unreadCount > 9 ? '9+' : unreadCount; }
+  else b.style.display = 'none';
+}
+function toggleNotif() {
+  const p = document.getElementById('notif-panel');
+  p.classList.toggle('open');
+  if (p.classList.contains('open')) {
+    notifications.forEach(n => n.read = true);
+    unreadCount = 0; updateBadge(); renderNotifs();
+  }
+}
+window.toggleNotif = toggleNotif;
+function renderNotifs() {
+  const el = document.getElementById('notif-list');
+  if (!notifications.length) { el.innerHTML='<div class="notif-empty">No notifications</div>'; return; }
+  el.innerHTML = '';
+  notifications.forEach(n => {
+    const d = document.createElement('div'); d.className='notif-item'+(n.read?'':' unread');
+    d.innerHTML=`<div class="notif-dot${n.read?' read':''}"></div><div><div class="notif-text">${n.msg}</div><div class="notif-time">${n.time}</div></div>`;
+    el.appendChild(d);
+  });
+}
+function clearNotifs() { notifications.length=0; unreadCount=0; updateBadge(); renderNotifs(); }
+window.clearNotifs = clearNotifs;
+
+document.addEventListener('click', e => {
+  const p = document.getElementById('notif-panel');
+  const b = document.getElementById('notif-btn');
+  if (p.classList.contains('open') && !p.contains(e.target) && !b.contains(e.target))
+    p.classList.remove('open');
+});
+
+/* ── TOAST ── */
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ── TICK ── */
+function tick(it, field, skipSave) {
+  it[field] = !it[field];
+  if (it[field]) it.ts[field] = {time:now(), user:curUser};
+  else delete it.ts[field];
+  if(!skipSave) saveState();
+}
+
+/* ── METRICS ── */
+function itemOk(it) { return it.raw && it.bag; }
+function s1Pct(oid) {
+  const items=state[oid];
+  const d=items.reduce((a,it)=>{
+    if(it.isJapan){const p=it.qty*it.cs; return a+((it.rawDone||0)>=p?1:0)+((it.bagDone||0)>=p?1:0);}
+    return a+(it.raw?1:0)+(it.bag?1:0);
+  },0);
+  return Math.round(d/(items.length*2)*100);
+}
+function s1AllDone(oid) {
+  return state[oid].every(it=>{
+    if(it.isJapan){const p=it.qty*it.cs; return (it.rawDone||0)>=p&&(it.bagDone||0)>=p;}
+    return it.raw&&it.bag;
+  });
+}
+function s2Pct(oid) {
+  const items=state[oid];
+  return Math.round(items.filter(it=>{
+    if(it.isJapan){const p=it.qty*it.cs; return (it.fillDone||0)>=p&&(it.weighDone||0)>=p;}
+    return it.s2done;
+  }).length/items.length*100);
+}
+function s3Pct(oid) {
+  const items=state[oid];
+  return Math.round(items.filter(it=>{
+    if(it.isJapan) return (it.boxDone||0)>=(it.qty*it.cs);
+    return it.s3done;
+  }).length/items.length*100);
+}
+function allDispatched(oid) {
+  return state[oid].every(it=>{
+    if(it.isJapan) return (it.boxDone||0)>=(it.qty*it.cs);
+    return it.s3done;
+  });
+}
+
+/* ── RENDER ── */
+function render() {
+  renderOTabs(); renderStageTabs(); renderContent();
+}
+function renderOTabs() {
+  const el = document.getElementById('otabs'); el.innerHTML='';
+  Object.keys(state).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'otab'+(k===curOrder?' active':'');
+    b.textContent = k;
+    b.onclick = () => { curOrder=k; render(); };
+    el.appendChild(b);
+  });
+}
+function s1p_Pct(oid){
+  const allItems=state[oid];
+  const eligible=allItems.filter(it=>{
+    if(it.isJapan) return (it.rawDone||0)>=(it.qty*it.cs)&&(it.bagDone||0)>=(it.qty*it.cs);
+    return itemOk(it);
+  });
+  if(!eligible.length) return 0;
+  return Math.round(eligible.filter(it=>{
+    if(it.isJapan) return (it.packopenDone||0)>=(it.qty*it.cs);
+    return it.packopen;
+  }).length/eligible.length*100);
+}
+function renderStageTabs() {
+  document.getElementById('stab1').className = 'stab'+(curStage===1?' active':s1AllDone(curOrder)?' completed':'');
+  document.getElementById('stab2').className = 'stab'+(curStage===2?' active':s1p_Pct(curOrder)===100?' completed':'');
+  document.getElementById('stab3').className = 'stab'+(curStage===3?' active':s2Pct(curOrder)===100?' completed':'');
+  document.getElementById('stab4').className = 'stab'+(curStage===4?' active':s3Pct(curOrder)===100?' completed':'');
+}
+function setStage(n) { curStage=n; render(); }
+window.setStage = setStage;
+
+function renderContent() {
+  const el = document.getElementById('content'); el.innerHTML='';
+  if (curStage===1) el.appendChild(buildS1());
+  else if (curStage===2) el.appendChild(buildPackOpen());
+  else if (curStage===3) el.appendChild(buildS2());
+  else el.appendChild(buildS3());
+}
+
+/* ── S1 ── */
+function buildS1() {
+  const items = state[curOrder];
+  const pct = s1Pct(curOrder); const allDone = s1AllDone(curOrder);
+  const card = document.createElement('div'); card.className='card';
+  const hd = document.createElement('div'); hd.className='card-hd';
+  hd.innerHTML=`<span class="card-title">① Raw product & Bags</span><span class="pct-badge ${allDone?'done':pct>0?'prog':'zero'}">${pct}%</span>`;
+  card.appendChild(hd);
+  const pb = document.createElement('div'); pb.className='pbar';
+  pb.innerHTML=`<div class="pfill ${allDone?'green':'amber'}" style="width:${pct}%"></div>`;
+  card.appendChild(pb);
+  items.forEach(it => {
+    const kg=calcKg(it);
+    const totalPcs=it.qty*it.cs;
+
+    if(it.isJapan) {
+      // ── JAPAN ORDER: cumulative qty tracking ──
+      const totalPcsJ = it.qty * it.cs;
+      const rawDone = it.rawDone || 0;
+      const bagDone = it.bagDone || 0;
+      const rawBal = totalPcsJ - rawDone;
+      const bagBal = totalPcsJ - bagDone;
+
+      const row = document.createElement('div'); row.className='jp-qty-row';
+
+      // Left: name + progress bars
+      const main = document.createElement('div'); main.className='jp-main';
+      const nm = document.createElement('span'); nm.className='jp-name'; nm.textContent=it.name;
+      main.appendChild(nm);
+
+      // Raw progress
+      const rawPct = Math.round(rawDone/totalPcsJ*100);
+      const bagPct = Math.round(bagDone/totalPcsJ*100);
+      main.innerHTML += `
+        <div class="jp-track-row">
+          <span class="jp-track-lbl">Raw</span>
+          <div class="jp-track-bar"><div class="jp-track-fill" style="width:${rawPct}%"></div></div>
+          <span class="jp-track-val ${rawDone>=totalPcsJ?'done':''}">${rawDone}/${totalPcsJ}</span>
+          <span class="jp-bal ${rawBal>0?'':'zero'}">Bal: ${rawBal}</span>
+        </div>
+        <div class="jp-track-row">
+          <span class="jp-track-lbl">Bag</span>
+          <div class="jp-track-bar"><div class="jp-track-fill bag" style="width:${bagPct}%"></div></div>
+          <span class="jp-track-val ${bagDone>=totalPcsJ?'done':''}">${bagDone}/${totalPcsJ}</span>
+          <span class="jp-bal ${bagBal>0?'':'zero'}">Bal: ${bagBal}</span>
+        </div>`;
+      row.appendChild(main);
+
+      // Right: input + OK for each stage
+      const inputArea = document.createElement('div'); inputArea.className='jp-input-area';
+
+      ['Raw','Bag'].forEach(function(label, si) {
+        const field = si===0 ? 'rawDone' : 'bagDone';
+        const done = it[field]||0;
+        const bal = totalPcsJ - done;
+        if(bal <= 0) return; // fully done, no input needed
+
+        const grp = document.createElement('div'); grp.className='jp-grp';
+        grp.innerHTML = `<span class="jp-grp-lbl">${label}</span>`;
+        const inp = document.createElement('input');
+        inp.className='jp-input'; inp.type='number'; inp.min=1; inp.max=bal;
+        inp.placeholder=`max ${bal}`; inp.style.width='80px';
+        const okBtn = document.createElement('button');
+        okBtn.className='jp-ok'; okBtn.textContent='+ Add';
+        okBtn.disabled=true;
+        inp.oninput=()=>{ okBtn.disabled=!(parseInt(inp.value)>0); };
+        inp.onkeydown=(e)=>{ if(e.key==='Enter'&&!okBtn.disabled) okBtn.click(); };
+        okBtn.onclick=()=>{
+          const add = Math.min(parseInt(inp.value)||0, bal);
+          if(add<=0) return;
+          it[field] = (it[field]||0) + add;
+          if(!it.ts[field]) it.ts[field]={};
+          it.ts[field] = {time:now(), user:curUser,
+            note:`+${add} (total ${it[field]}/${totalPcsJ})`};
+          // auto-mark raw/bag done when complete
+          if((it.rawDone||0)>=totalPcsJ) it.raw=true;
+          if((it.bagDone||0)>=totalPcsJ) it.bag=true;
+          addNotif(`🇯🇵 [${curOrder}] ${it.name} ${label} +${add} → ${it[field]}/${totalPcsJ} (${curUser})`);
+          inp.value='';
+          saveState(); renderContent(); renderStageTabs();
+        };
+        grp.appendChild(inp); grp.appendChild(okBtn);
+        inputArea.appendChild(grp);
+      });
+
+      const jb = document.createElement('span'); jb.className='japan-badge'; jb.textContent='🇯🇵';
+      inputArea.appendChild(jb);
+      row.appendChild(inputArea);
+      card.appendChild(row);
+      return;
+    }
+
+        // ── NORMAL ORDER ──
+    const partial=(it.raw&&!it.bag)||(!it.raw&&it.bag);
+    const row=document.createElement('div'); row.className='it-row';
+    const main=document.createElement('div'); main.className='it-main';
+    const nm=document.createElement('span'); nm.className='it-name'+(partial?' warn':''); nm.textContent=it.name;
+    main.appendChild(nm);
+    if(it.raw||it.bag){
+      const tsDiv=document.createElement('div'); tsDiv.className='it-ts';
+      const parts=[];
+      if(it.raw&&it.ts.raw) parts.push(`Raw: ${it.ts.raw.user} ${it.ts.raw.time}`);
+      if(it.bag&&it.ts.bag) parts.push(`Bag: ${it.ts.bag.user} ${it.ts.bag.time}`);
+      tsDiv.textContent=parts.join(' · ');
+      main.appendChild(tsDiv);
+    }
+    const pair=document.createElement('div'); pair.className='ck-pair';
+    ['raw','bag'].forEach(f => {
+      const ci=document.createElement('div'); ci.className='cki';
+      ci.innerHTML=`<div class="ckb ${it[f]?'on':''}">${it[f]?'✓':''}</div><span class="cklbl">${f==='raw'?'Raw':'Bag'}</span>`;
+      ci.onclick=()=>{
+        tick(it,f,true);
+        if(it.raw&&it.bag) addNotif(`✅ [${curOrder}] ${it.name} — Raw & Bag ready (${curUser})`);
+        if(s1AllDone(curOrder)) addNotif(`🎉 [${curOrder}] Stage 1 complete!`);
+        renderContent(); renderStageTabs(); renderOTabs();
+        saveState();
+      };
+      pair.appendChild(ci);
+    });
+    row.appendChild(main);
+    const pcsSpan=document.createElement('span');
+    pcsSpan.style.cssText='font-size:11px;color:var(--text3);flex-shrink:0;';
+    pcsSpan.textContent=totalPcs+'pcs';
+    row.appendChild(pcsSpan);
+    if(kg){const ks=document.createElement('span');ks.className='it-kg '+(it.raw?'ok':'miss');ks.textContent=kg;row.appendChild(ks);}
+    row.appendChild(pair);
+    card.appendChild(row);
+  });;
+  const ba=document.createElement('div'); ba.className='btn-area';
+  const btn=document.createElement('button');
+  btn.className='proceed-btn '+(allDone?'full':'partial');
+  btn.textContent=allDone?'② Pack Open →':`⚠ ${pct}% — Proceed anyway`;
+  btn.onclick=()=>setStage(2);
+  ba.appendChild(btn); card.appendChild(ba);
+  return card;
+}
+
+/* ── PACK OPEN ── */
+function buildPackOpen() {
+  const oid=curOrder;
+  const allItems=state[oid];
+  // Japan items: use rawDone/bagDone >= totalPcs as "ok"
+  // Japan: can pack open up to min(rawDone, bagDone)
+  const okItems=allItems.filter(it=>{
+    if(it.isJapan) return Math.min(it.rawDone||0, it.bagDone||0) > 0;
+    return itemOk(it);
+  });
+  const issueItems=allItems.filter(it=>{
+    if(it.isJapan) return Math.min(it.rawDone||0, it.bagDone||0) <= 0;
+    return !itemOk(it);
+  });
+  const doneCount=okItems.filter(it=>it.packopen).length;
+  const pct=okItems.length?Math.round(doneCount/okItems.length*100):0;
+  const allDone=doneCount===okItems.length&&okItems.length>0;
+
+  const card=document.createElement('div'); card.className='card';
+  const hd=document.createElement('div'); hd.className='card-hd';
+  hd.innerHTML=`<span class="card-title">② Pack Open</span>
+    <span class="pct-badge ${allDone?'done':pct>0?'prog':'zero'}">${pct}%</span>`;
+  card.appendChild(hd);
+  const pb=document.createElement('div'); pb.className='pbar';
+  pb.innerHTML=`<div class="pfill ${allDone?'green':'amber'}" style="width:${pct}%"></div>`;
+  card.appendChild(pb);
+
+  // OK items — with checkbox (or Japan qty)
+  okItems.forEach(it=>{
+    const kg=calcKg(it);
+    const pcs=it.qty*it.cs;
+
+    if(it.isJapan){
+      // Japan Pack Open: max = min(rawDone, bagDone) - already packed open
+      const maxCanOpen = Math.min(it.rawDone||0, it.bagDone||0);
+      const packDone = it.packopenDone||0;
+      const packBal = maxCanOpen - packDone; // how many more can open NOW
+      const packPct = maxCanOpen>0 ? Math.round(packDone/maxCanOpen*100) : 0;
+      const totalPct = Math.round(packDone/pcs*100);
+
+      const row=document.createElement('div'); row.className='jp-qty-row';
+      const main=document.createElement('div'); main.className='jp-main';
+      main.innerHTML=`<span class="jp-name">${it.name}</span>
+        <div class="jp-track-row">
+          <span class="jp-track-lbl">PO</span>
+          <div class="jp-track-bar"><div class="jp-track-fill" style="width:${totalPct}%"></div></div>
+          <span class="jp-track-val ${packDone>=pcs?'done':''}">${packDone}/${pcs}</span>
+          <span class="jp-bal ${packBal<=0&&packDone>=pcs?'zero':''}">Available: ${packBal} | Total Bal: ${pcs-packDone}</span>
+        </div>`;
+      row.appendChild(main);
+      const inputArea=document.createElement('div'); inputArea.className='jp-input-area';
+      if(packBal>0){
+        const grp=document.createElement('div'); grp.className='jp-grp';
+        grp.innerHTML=`<span class="jp-grp-lbl">PO</span>`;
+        const inp=document.createElement('input');
+        inp.className='jp-input'; inp.type='number'; inp.min=1; inp.max=packBal;
+        inp.placeholder=`max ${packBal}`;
+        const okBtn=document.createElement('button'); okBtn.className='jp-ok'; okBtn.textContent='+ Add'; okBtn.disabled=true;
+        inp.oninput=()=>{okBtn.disabled=!(parseInt(inp.value)>0&&parseInt(inp.value)<=packBal);};
+        inp.onkeydown=(e)=>{if(e.key==='Enter'&&!okBtn.disabled)okBtn.click();};
+        okBtn.onclick=()=>{
+          const add=Math.min(parseInt(inp.value)||0, packBal);
+          if(add<=0) return;
+          it.packopenDone=(it.packopenDone||0)+add;
+          it.ts.packopen={time:now(),user:curUser,note:`+${add} total ${it.packopenDone}/${pcs}`};
+          if(it.packopenDone>=pcs) it.packopen=true;
+          addNotif(`🇯🇵 [${oid}] ${it.name} Pack Open +${add} → ${it.packopenDone}/${pcs} (${curUser})`);
+          inp.value=''; saveState(); renderContent(); renderStageTabs();
+        };
+        grp.appendChild(inp); grp.appendChild(okBtn); inputArea.appendChild(grp);
+      } else if(packDone>=pcs){
+        const d=document.createElement('span'); d.style.cssText='color:var(--green);font-size:12px;font-weight:600;'; d.textContent='✅ All Done';
+        inputArea.appendChild(d);
+      } else {
+        const d=document.createElement('span'); d.style.cssText='color:var(--text3);font-size:11px;'; d.textContent='Waiting for Raw/Bag';
+        inputArea.appendChild(d);
+      }
+      const jb=document.createElement('span'); jb.className='japan-badge'; jb.textContent='🇯🇵';
+      inputArea.appendChild(jb); row.appendChild(inputArea); card.appendChild(row);
+      return;
+    }
+
+    const row=document.createElement('div'); row.className='fw-row';
+    const main=document.createElement('div'); main.className='fw-main';
+    const nm=document.createElement('span'); nm.className='fw-name ok'; nm.textContent=it.name;
+    main.appendChild(nm);
+    if(it.packopen&&it.ts&&it.ts.packopen){
+      const tsDiv=document.createElement('div'); tsDiv.className='fw-ts';
+      tsDiv.textContent='Opened: '+it.ts.packopen.user+' '+it.ts.packopen.time;
+      main.appendChild(tsDiv);
+    }
+    row.appendChild(main);
+    // pcs + kg
+    const pcsSpan=document.createElement('span');
+    pcsSpan.style.cssText='font-size:11px;color:var(--text3);flex-shrink:0;';
+    pcsSpan.textContent=pcs+'pcs';
+    row.appendChild(pcsSpan);
+    if(kg){const ks=document.createElement('span');ks.className='fw-kg ok';ks.textContent=kg;row.appendChild(ks);}
+    // checkbox
+    const ci=document.createElement('div'); ci.className='fw-cki';
+    ci.innerHTML=`<div class="fw-box ${it.packopen?'on':''}">${it.packopen?'✓':''}</div>
+      <span class="fw-lbl">Pack Open</span>`;
+    ci.onclick=()=>{
+      tick(it,'packopen',true);
+      if(s1p_Pct(oid)===100) addNotif(`✅ [${oid}] Pack Open stage complete!`);
+      renderContent(); renderStageTabs();
+      saveState();
+    };
+    row.appendChild(ci);
+    card.appendChild(row);
+  });
+
+  // Issue items — no checkbox, just show red
+  if(issueItems.length>0){
+    const sep=document.createElement('div');
+    sep.style.cssText='padding:6px 14px;font-size:11px;color:var(--text3);background:var(--bg3);border-top:0.5px solid var(--border);';
+    sep.textContent='⚠ Issue items — no Raw/Bag ('+issueItems.length+')';
+    card.appendChild(sep);
+    issueItems.forEach(it=>{
+      const kg=calcKg(it);
+      const pcs=it.qty*it.cs;
+      const row=document.createElement('div'); row.className='fw-row';
+      const main=document.createElement('div'); main.className='fw-main';
+      const nm=document.createElement('span'); nm.className='fw-name nok'; nm.textContent=it.name;
+      main.appendChild(nm);
+      row.appendChild(main);
+      const pcsSpan=document.createElement('span');
+      pcsSpan.style.cssText='font-size:11px;color:var(--text3);flex-shrink:0;';
+      pcsSpan.textContent=pcs+'pcs';
+      row.appendChild(pcsSpan);
+      if(kg){const ks=document.createElement('span');ks.className='fw-kg nok';ks.textContent=kg;row.appendChild(ks);}
+      const w=document.createElement('span'); w.className='warn-tag';
+      w.textContent=(!it.raw&&!it.bag)?'No Raw & Bag':!it.raw?'No Raw':'No Bag';
+      row.appendChild(w);
+      card.appendChild(row);
+    });
+  }
+
+  // Proceed button
+  const ba=document.createElement('div'); ba.className='btn-area';
+  const btn=document.createElement('button');
+  btn.className='proceed-btn '+(allDone?'full':'partial');
+  btn.textContent=allDone?'③ Fill & Seal →':`⚠ ${doneCount}/${okItems.length} — Proceed anyway`;
+  btn.onclick=()=>setStage(3);
+  ba.appendChild(btn); card.appendChild(ba);
+  return card;
+}
+
+/* ── S2 ── */
+function buildS2() {
+  const oid=curOrder; const allItems=state[oid];
+  const remaining=allItems.filter(it=>{
+    if(it.isJapan){const p=it.qty*it.cs; return (it.fillDone||0)<p||(it.weighDone||0)<p;}
+    return !it.s2done;
+  });
+  const pct=s2Pct(oid); const allDone=remaining.length===0;
+  const card=document.createElement('div'); card.className='card';
+  const hd=document.createElement('div'); hd.className='card-hd';
+  hd.innerHTML=`<span class="card-title">③ Fill &amp; Seal</span><span class="pct-badge ${allDone?'done':pct>0?'prog':'zero'}">${pct}%</span>`;
+  card.appendChild(hd);
+  const pb=document.createElement('div'); pb.className='pbar';
+  pb.innerHTML=`<div class="pfill ${allDone?'green':'amber'}" style="width:${pct}%"></div>`;
+  card.appendChild(pb);
+  if (allDone) {
+    const en=document.createElement('div'); en.className='empty-note'; en.textContent='✅ All items Fill & Seal complete!'; card.appendChild(en);
+  } else {
+    remaining.forEach(it => {
+      // Japan Order — fill qty tracking in S2
+      if(it.isJapan) {
+        const totalPcsJ=it.qty*it.cs;
+        const fillDone=it.fillDone||0;
+        const fillBal=totalPcsJ-fillDone;
+        const fillPct=Math.round(fillDone/totalPcsJ*100);
+        const weighDone=it.weighDone||0;
+        const weighBal=totalPcsJ-weighDone;
+        const weighPct=Math.round(weighDone/totalPcsJ*100);
+        const row=document.createElement('div'); row.className='jp-qty-row';
+        const main=document.createElement('div'); main.className='jp-main';
+        main.innerHTML=`<span class="jp-name">${it.name}</span>
+          <div class="jp-track-row">
+            <span class="jp-track-lbl">Fill</span>
+            <div class="jp-track-bar"><div class="jp-track-fill" style="width:${fillPct}%"></div></div>
+            <span class="jp-track-val ${fillDone>=totalPcsJ?'done':''}">${fillDone}/${totalPcsJ}</span>
+            <span class="jp-bal ${fillBal<=0?'zero':''}">Bal: ${fillBal}</span>
+          </div>
+          <div class="jp-track-row">
+            <span class="jp-track-lbl">Seal</span>
+            <div class="jp-track-bar"><div class="jp-track-fill bag" style="width:${weighPct}%"></div></div>
+            <span class="jp-track-val ${weighDone>=totalPcsJ?'done':''}">${weighDone}/${totalPcsJ}</span>
+            <span class="jp-bal ${weighBal<=0?'zero':''}">Bal: ${weighBal}</span>
+          </div>`;
+        row.appendChild(main);
+        const inputArea=document.createElement('div'); inputArea.className='jp-input-area';
+        [{label:'Fill',field:'fillDone'},{label:'Seal',field:'weighDone'}].forEach(function(s){
+          const done=it[s.field]||0;
+          // Max fill/seal = packopenDone (can only fill what's been opened)
+          const maxCan=it.packopenDone||0;
+          const bal=maxCan-done; // available to fill now
+          const totalBal=totalPcsJ-done; // total remaining
+          if(maxCan<=0){
+            // No packs opened yet
+            const grp2=document.createElement('div'); grp2.className='jp-grp';
+            grp2.innerHTML=`<span class="jp-grp-lbl" style="color:var(--text3)">${s.label}: waiting for Pack Open</span>`;
+            inputArea.appendChild(grp2); return;
+          }
+          if(bal<=0 && done<totalPcsJ){
+            // All opened ones are filled, but more to come
+            const grp2=document.createElement('div'); grp2.className='jp-grp';
+            grp2.innerHTML=`<span class="jp-grp-lbl" style="color:var(--green);">${s.label}: ${done}/${totalPcsJ} ✓ (Bal: ${totalBal})</span>`;
+            inputArea.appendChild(grp2); return;
+          }
+          if(bal<=0) return;
+          const grp=document.createElement('div'); grp.className='jp-grp';
+          grp.innerHTML=`<span class="jp-grp-lbl">${s.label}</span>`;
+          const inp=document.createElement('input');
+          inp.className='jp-input'; inp.type='number'; inp.min=1; inp.max=bal;
+          inp.placeholder=`max ${bal}`;
+          const okBtn=document.createElement('button'); okBtn.className='jp-ok'; okBtn.textContent='+ Add'; okBtn.disabled=true;
+          inp.oninput=()=>{okBtn.disabled=!(parseInt(inp.value)>0);};
+          inp.onkeydown=(e)=>{if(e.key==='Enter'&&!okBtn.disabled)okBtn.click();};
+          okBtn.onclick=()=>{
+            const add=Math.min(parseInt(inp.value)||0,bal);
+            if(add<=0) return;
+            it[s.field]=(it[s.field]||0)+add;
+            it.ts[s.field]={time:now(),user:curUser,note:`+${add} total ${it[s.field]}/${totalPcsJ}`};
+            if((it.fillDone||0)>=totalPcsJ&&(it.weighDone||0)>=totalPcsJ){it.s2done=true;}
+            addNotif(`🇯🇵 [${oid}] ${it.name} ${s.label} +${add} → ${it[s.field]}/${totalPcsJ} (${curUser})`);
+            inp.value=''; saveState(); renderContent(); renderStageTabs();
+          };
+          grp.appendChild(inp); grp.appendChild(okBtn); inputArea.appendChild(grp);
+        });
+        const jb=document.createElement('span'); jb.className='japan-badge'; jb.textContent='🇯🇵';
+        inputArea.appendChild(jb); row.appendChild(inputArea); card.appendChild(row);
+        return; // skip normal S2 row
+      }
+
+      const hasIssue=!itemOk(it); const kg=calcKg(it);
+      const rowId='fw-'+oid+'-'+it.name.replace(/[\s&]/g,'_');
+      const row=document.createElement('div'); row.className='fw-row'; row.id=rowId;
+      const main=document.createElement('div'); main.className='fw-main';
+      const nm=document.createElement('span'); nm.className='fw-name '+(hasIssue?'nok':'ok'); nm.textContent=it.name;
+      main.appendChild(nm);
+      if(it.fill||it.weigh){
+        const tsDiv=document.createElement('div'); tsDiv.className='fw-ts';
+        const parts=[];
+        if(it.fill&&it.ts.fill) parts.push(`Fill: ${it.ts.fill.user} ${it.ts.fill.time}`);
+        if(it.weigh&&it.ts.weigh) parts.push(`Weigh: ${it.ts.weigh.user} ${it.ts.weigh.time}`);
+        tsDiv.textContent=parts.join(' · ');
+        main.appendChild(tsDiv);
+      }
+      row.appendChild(main);
+      if(kg){const ks=document.createElement('span');ks.className='fw-kg '+(hasIssue?'nok':'ok');ks.textContent=kg;row.appendChild(ks);}
+      if (hasIssue) {
+        const w=document.createElement('span'); w.className='warn-tag';
+        w.textContent=(!it.raw&&!it.bag)?'No Raw & Bag':!it.raw?'No Raw':'No Bag';
+        row.appendChild(w);
+      } else {
+        const pair=document.createElement('div'); pair.className='fw-pair';
+        ['fill','weigh'].forEach(f => {
+          const ci=document.createElement('div'); ci.className='fw-cki';
+          ci.innerHTML=`<div class="fw-box ${it[f]?'on':''}">${it[f]?'✓':''}</div><span class="fw-lbl">${f==='fill'?'Fill':'Weigh'}</span>`;
+          ci.onclick=()=>{
+            const willComplete = (f==='fill' && it.weigh) || (f==='weigh' && it.fill);
+            if(willComplete) it.s2done=true;
+            tick(it, f, true); // skipSave - prevent Firebase race
+            if(willComplete){
+              addNotif(`✅ [${oid}] ${it.name} — Fill & Seal done (${curUser})`);
+              if(s2Pct(oid)===100) addNotif(`🎉 [${oid}] Fill & Seal complete!`);
+            }
+            renderContent();
+            renderStageTabs();
+            saveState(); // save AFTER render, s2done already set
+          };
+          pair.appendChild(ci);
+        });
+        row.appendChild(pair);
+      }
+      card.appendChild(row);
+    });
+  }
+  const ba=document.createElement('div'); ba.className='btn-area';
+  const done2=allItems.filter(it=>it.s2done).length;
+  const btn=document.createElement('button');
+  btn.className='proceed-btn '+(allDone?'full':'partial');
+  btn.textContent=allDone?'④ Box & OK →':`⚠ ${done2}/${allItems.length} — Proceed anyway`;
+  btn.onclick=()=>setStage(4);
+  ba.appendChild(btn); card.appendChild(ba);
+  return card;
+}
+
+/* ── S3 ── */
+function buildS3() {
+  const oid=curOrder; const allItems=state[oid];
+  const ready=allItems.filter(it=>{
+    if(it.isJapan){
+      const p=it.qty*it.cs;
+      return (it.fillDone||0)>=p&&(it.weighDone||0)>=p&&(it.boxDone||0)<p;
+    }
+    return it.s2done&&!it.s3done;
+  });
+  const notS2=allItems.filter(it=>{
+    if(it.isJapan){
+      const p=it.qty*it.cs;
+      return ((it.fillDone||0)<p||(it.weighDone||0)<p)&&(it.boxDone||0)<p;
+    }
+    return !it.s2done&&!it.s3done;
+  });
+  const pct=s3Pct(oid); const allDone=allDispatched(oid);
+  const card=document.createElement('div'); card.className='card';
+  const hd=document.createElement('div'); hd.className='card-hd';
+  hd.innerHTML=`<span class="card-title">④ Box &amp; OK</span><span class="pct-badge ${allDone?'done':pct>0?'prog':'zero'}">${pct}%</span>`;
+  card.appendChild(hd);
+  const pb=document.createElement('div'); pb.className='pbar';
+  pb.innerHTML=`<div class="pfill ${allDone?'green':'amber'}" style="width:${pct}%"></div>`;
+  card.appendChild(pb);
+  if (allDone) {
+    const en=document.createElement('div'); en.className='all-done'; en.textContent='✅ All items complete!'; card.appendChild(en);
+    const ba=document.createElement('div'); ba.className='btn-area';
+    const db2=document.createElement('button'); db2.className='dispatch-btn';
+    db2.textContent='🚚 Dispatch Confirm!';
+    db2.onclick=()=>{
+      addNotif(`🚚 [${oid}] Dispatched! Confirmed by ${curUser} at ${now()}`);
+      showToast('🚚 '+oid+' dispatched!');
+      // Archive order to dispatched path, then remove from active state
+      setTimeout(async ()=>{
+        // Save to archive with dispatch info
+        const archiveData = {
+          items: state[oid],
+          meta: { dispatchedBy: curUser, dispatchedAt: now(), itemCount: state[oid].length }
+        };
+        try {
+          await set(ref(db, 'kenko/dispatched/'+oid), JSON.stringify(archiveData));
+        } catch(e) { console.error('Archive failed:', e); }
+        // Remove from active
+        delete state[oid];
+        saveState();
+        // Switch to next available order
+        const remaining=Object.keys(state);
+        curOrder=remaining.length>0?remaining[0]:null;
+        curStage=1;
+        render();
+      }, 1000);
+    };
+    ba.appendChild(db2); card.appendChild(ba);
+    return card;
+  }
+  ready.forEach(it => {
+    // Japan Order box tracking
+    if(it.isJapan) {
+      const totalPcsJ=it.qty*it.cs;
+      const boxDone=it.boxDone||0;
+      // Can only box what's been filled AND sealed
+      const maxCanBox=Math.min(it.fillDone||0, it.weighDone||0);
+      const boxAvail=maxCanBox-boxDone; // available to box now
+      const boxBal=totalPcsJ-boxDone;  // total remaining
+      const boxPct=Math.round(boxDone/totalPcsJ*100);
+      const row=document.createElement('div'); row.className='jp-qty-row';
+      const main=document.createElement('div'); main.className='jp-main';
+      main.innerHTML=`<span class="jp-name">${it.name}</span>
+        <div class="jp-track-row">
+          <span class="jp-track-lbl">Box</span>
+          <div class="jp-track-bar"><div class="jp-track-fill" style="width:${boxPct}%"></div></div>
+          <span class="jp-track-val ${boxDone>=totalPcsJ?'done':''}">${boxDone}/${totalPcsJ}</span>
+          <span class="jp-bal ${boxBal<=0?'zero':''}">Bal: ${boxBal}</span>
+        </div>`;
+      row.appendChild(main);
+      const inputArea=document.createElement('div'); inputArea.className='jp-input-area';
+      if(maxCanBox<=0){
+        // Nothing filled yet
+        const w=document.createElement('div'); w.className='jp-grp';
+        w.innerHTML=`<span style="font-size:11px;color:var(--text3)">Box: waiting for Fill & Seal</span>`;
+        inputArea.appendChild(w);
+      } else if(boxAvail>0){
+        const grp=document.createElement('div'); grp.className='jp-grp';
+        grp.innerHTML=`<span class="jp-grp-lbl">Box</span>`;
+        const inp=document.createElement('input');
+        inp.className='jp-input'; inp.type='number'; inp.min=1; inp.max=boxAvail;
+        inp.placeholder=`max ${boxAvail}`;
+        const okBtn=document.createElement('button'); okBtn.className='jp-ok'; okBtn.textContent='+ Add'; okBtn.disabled=true;
+        inp.oninput=()=>{okBtn.disabled=!(parseInt(inp.value)>0&&parseInt(inp.value)<=boxAvail);};
+        inp.onkeydown=(e)=>{if(e.key==='Enter'&&!okBtn.disabled)okBtn.click();};
+        okBtn.onclick=()=>{
+          const add=Math.min(parseInt(inp.value)||0,boxAvail);
+          if(add<=0) return;
+          it.boxDone=(it.boxDone||0)+add;
+          it.ts.box={time:now(),user:curUser,note:`+${add} total ${it.boxDone}/${totalPcsJ}`};
+          if(it.boxDone>=totalPcsJ){it.box=true;it.s3done=true;}
+          addNotif(`🇯🇵 [${oid}] ${it.name} Box +${add} → ${it.boxDone}/${totalPcsJ} (${curUser})`);
+          inp.value=''; saveState(); renderContent(); renderStageTabs();
+        };
+        grp.appendChild(inp); grp.appendChild(okBtn); inputArea.appendChild(grp);
+        // show balance info
+        if(boxBal>boxAvail){
+          const info=document.createElement('div'); info.style.cssText='font-size:10px;color:var(--text3);margin-top:2px;';
+          info.textContent=`Total remaining: ${boxBal} | Available now: ${boxAvail}`;
+          inputArea.appendChild(info);
+        }
+      } else if(boxAvail<=0 && boxDone<totalPcsJ){
+        // All filled ones boxed, waiting for more fill
+        const w=document.createElement('div'); w.className='jp-grp';
+        w.innerHTML=`<span style="font-size:11px;color:var(--green)">Box: ${boxDone}/${totalPcsJ} ✓ | Waiting Fill&Seal for more</span>`;
+        inputArea.appendChild(w);
+      } else {
+        // All boxed — show done
+        const doneEl=document.createElement('span');
+        doneEl.style.cssText='color:var(--green);font-size:12px;font-weight:600;';
+        doneEl.textContent='✅ Complete';
+        inputArea.appendChild(doneEl);
+      }
+      const jb=document.createElement('span'); jb.className='japan-badge'; jb.textContent='🇯🇵';
+      inputArea.appendChild(jb); row.appendChild(inputArea); card.appendChild(row);
+      return;
+    }
+
+    const hasIssue=!itemOk(it); const kg=calcKg(it);
+    const rowId='box-'+oid+'-'+it.name.replace(/[\s&]/g,'_');
+    const row=document.createElement('div'); row.className='box-row'; row.id=rowId;
+    const main=document.createElement('div'); main.className='box-main';
+    const nm=document.createElement('span'); nm.className='box-name '+(hasIssue?'nok':'ok'); nm.textContent=it.name;
+    main.appendChild(nm);
+    if(it.box&&it.ts.box){const tsDiv=document.createElement('div');tsDiv.className='box-ts';tsDiv.textContent=`Box: ${it.ts.box.user} ${it.ts.box.time}`;main.appendChild(tsDiv);}
+    row.appendChild(main);
+    if(kg){const ks=document.createElement('span');ks.className='box-kg '+(hasIssue?'nok':'ok');ks.textContent=kg;row.appendChild(ks);}
+    const bck=document.createElement('div'); bck.className='box-ck';
+    bck.innerHTML=`<div class="box-b ${it.box?'on':''}">${it.box?'✓':''}</div><span class="box-lbl">Box</span>`;
+    bck.onclick=()=>{tick(it,'box',true);renderContent();saveState();};
+    row.appendChild(bck);
+    const okBtn=document.createElement('button');
+    if(it.box){
+      okBtn.className='ok-btn '+(hasIssue?'issue-ok':'ready');
+      okBtn.textContent=hasIssue?'⚠ OK':'✔ OK';
+      okBtn.onclick=()=>{
+        it.ts.ok={time:now(),user:curUser};
+        addNotif(`📦 [${oid}] ${it.name} — Boxed & OK (${curUser})`);
+        const r=document.getElementById(rowId); if(r) r.classList.add('removing');
+        it.s3done=true;saveState();renderContent();renderStageTabs();
+      };
+    } else { okBtn.className='ok-btn dis'; okBtn.textContent='OK'; okBtn.disabled=true; }
+    row.appendChild(okBtn);
+    card.appendChild(row);
+  });
+  if(notS2.length>0){
+    const sep=document.createElement('div'); sep.className='pending-sep';
+    sep.textContent=`⏳ Stage 2 pending — ${notS2.length} items`;
+    card.appendChild(sep);
+    notS2.forEach(it=>{
+      const hasIssue=!itemOk(it); const kg=calcKg(it);
+      const rowId='box2-'+oid+'-'+it.name.replace(/[\s&]/g,'_');
+      const row=document.createElement('div'); row.className='box-row'; row.id=rowId;
+      const main=document.createElement('div'); main.className='box-main';
+      const nm=document.createElement('span'); nm.className='box-name nok'; nm.textContent=it.name; main.appendChild(nm);
+      row.appendChild(main);
+      if(kg){const ks=document.createElement('span');ks.className='box-kg nok';ks.textContent=kg;row.appendChild(ks);}
+      if(hasIssue){const w=document.createElement('span');w.className='warn-tag';w.textContent=(!it.raw&&!it.bag)?'No Raw & Bag':!it.raw?'No Raw':'No Bag';row.appendChild(w);}
+      else{const w=document.createElement('span');w.className='warn-tag';w.style.background='var(--amber-bg)';w.style.color='var(--amber)';w.textContent='Fill/Weigh pending';row.appendChild(w);}
+      const okBtn=document.createElement('button'); okBtn.className='ok-btn issue-ok'; okBtn.textContent='⚠ OK';
+      okBtn.onclick=()=>{
+        it.s2done=true; it.box=true;
+        it.ts.box={time:now(),user:curUser}; it.ts.ok={time:now(),user:curUser};
+        addNotif(`⚠ [${oid}] ${it.name} — Force OK by ${curUser}`);
+        const r=document.getElementById(rowId); if(r) r.classList.add('removing');
+        it.s3done=true;saveState();renderContent();renderStageTabs();
+      };
+      row.appendChild(okBtn);
+      card.appendChild(row);
+    });
+  }
+  return card;
+}
+
+
+/* ══ ADD ORDER ══ */
+let aoItems = [];
+let aoSource = null;
+let aoCustomName = '';
+
+function openAddOrder() {
+  aoItems = [];
+  aoSource = Object.keys(CUSTOMER_ITEMS)[0];
+  renderAoChips();
+  renderAoSuggest();
+  renderAoItems();
+  document.getElementById('ao-name').value = '';
+  document.getElementById('ao-qty').value = '1';
+  document.getElementById('ao-overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('ao-suggest').firstChild && document.getElementById('ao-suggest').firstChild.focus(); }, 200);
+}
+window.openAddOrder = openAddOrder;
+
+function closeAddOrder() {
+  document.getElementById('ao-overlay').classList.remove('open');
+}
+window.closeAddOrder = closeAddOrder;
+
+function renderAoChips() {
+  const el = document.getElementById('ao-chips');
+  el.innerHTML = '';
+  Object.keys(CUSTOMER_ITEMS).forEach(function(name) {
+    const isJpn = (name === JAPAN_CUSTOMER);
+    const btn = document.createElement('button');
+    btn.className = 'ao-chip' + (isJpn?' japan':'') + (name === aoSource ? ' active' : '');
+    btn.textContent = name;
+    btn.onclick = function() { aoSource = name; aoCustomName=''; renderAoChips(); renderAoSuggest(); };
+    el.appendChild(btn);
+  });
+  // + Custom button
+  const customBtn = document.createElement('button');
+  customBtn.className = 'ao-chip custom-chip' + (aoSource==='__CUSTOM__'?' active':'');
+  customBtn.textContent = '+ Custom';
+  customBtn.onclick = function() {
+    const name = prompt('Enter customer / order name:');
+    if(!name||!name.trim()) return;
+    aoCustomName = name.trim();
+    aoSource = '__CUSTOM__';
+    renderAoChips();
+    renderAoSuggest();
+  };
+  el.appendChild(customBtn);
+  // Show custom name if active
+  if(aoSource==='__CUSTOM__'&&aoCustomName){
+    const lbl=document.createElement('span');
+    lbl.style.cssText='font-size:12px;color:#e09020;padding:4px 8px;border-radius:8px;border:1px solid #c87000;';
+    lbl.textContent='📝 '+aoCustomName;
+    el.appendChild(lbl);
+  }
+}
+
+function renderAoSuggest() {
+  const el = document.getElementById('ao-suggest');
+  el.innerHTML = '';
+  const items = CUSTOMER_ITEMS[aoSource] || [];
+  items.forEach(function(itemName) {
+    const already = aoItems.some(function(x){ return x.name === itemName; });
+    const chip = document.createElement('button');
+    chip.className = 'ao-suggest-chip' + (already ? ' added' : '');
+    chip.textContent = itemName;
+    chip.onclick = function() {
+      if (already) return;
+      document.getElementById('ao-name').value = itemName;
+      document.getElementById('ao-qty').focus();
+      document.getElementById('ao-qty').select();
+    };
+    el.appendChild(chip);
+  });
+}
+
+function aoAddItem() {
+  const name = document.getElementById('ao-name').value.trim();
+  const qty  = parseInt(document.getElementById('ao-qty').value) || 0;
+  if (!name || qty < 1) return;
+  const dup = aoItems.findIndex(function(x){ return x.name === name; });
+  if (dup >= 0) { aoItems[dup].qty += qty; }
+  else { aoItems.push({ name:name, qty:qty, cs:1 }); }
+  document.getElementById('ao-name').value = '';
+  document.getElementById('ao-qty').value = '1';
+  renderAoItems();
+  renderAoSuggest();
+  document.getElementById('ao-name').focus();
+}
+window.aoAddItem = aoAddItem;
+
+function aoRemoveItem(i) {
+  aoItems.splice(i, 1);
+  renderAoItems();
+  renderAoSuggest();
+}
+window.aoRemoveItem = aoRemoveItem;
+
+function renderAoItems() {
+  const el = document.getElementById('ao-item-list');
+  el.innerHTML = '';
+  document.getElementById('ao-count').textContent = aoItems.length + ' item' + (aoItems.length !== 1 ? 's' : '');
+  document.getElementById('ao-confirm').disabled = aoItems.length === 0;
+  aoItems.forEach(function(it, i) {
+    const row = document.createElement('div');
+    row.className = 'ao-item-row';
+    row.innerHTML = '<span class="ao-item-name">' + it.name + '</span>'
+      + '<span class="ao-item-qty">x' + it.qty + '</span>'
+      + '<button class="ao-item-del" onclick="aoRemoveItem(' + i + ')">✕</button>';
+    el.appendChild(row);
+  });
+}
+
+async function aoConfirm() {
+  if (!aoItems.length) return;
+  const orderPrefix = aoSource==='__CUSTOM__' ? aoCustomName : aoSource;
+  const orderId = orderPrefix + '-' + Date.now().toString().slice(-6);
+  const newOrder = aoItems.map(function(it) {
+    const isJpn = (aoSource === JAPAN_CUSTOMER || aoCustomName.toLowerCase().includes('japan'));
+    return { name:it.name, qty:it.qty, cs:it.cs,
+      isJapan:isJpn,
+      rawDone:0, bagDone:0,
+      raw:false, bag:false, packopen:false, fill:false, weigh:false, box:false,
+      s2done:false, s3done:false, ts:{} };
+  });
+  state[orderId] = newOrder;
+  saveState();
+  closeAddOrder();
+  curOrder = orderId;
+  curStage = 1;
+  render();
+  showToast('✅ ' + orderId + ' added!');
+}
+window.aoConfirm = aoConfirm;
+
+// Enter key support in add order
+document.addEventListener('DOMContentLoaded', function() {
+  const aoName = document.getElementById('ao-name');
+  const aoQty  = document.getElementById('ao-qty');
+  if (aoName) aoName.addEventListener('keydown', function(e){ if(e.key==='Enter') { aoQty.focus(); aoQty.select(); } });
+  if (aoQty)  aoQty.addEventListener('keydown',  function(e){ if(e.key==='Enter') aoAddItem(); });
+});
+
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js')
+      .then(function(reg){ console.log('SW registered'); })
+      .catch(function(e){ console.log('SW error', e); });
+  });
+}
+</script>
+</body>
+</html>
